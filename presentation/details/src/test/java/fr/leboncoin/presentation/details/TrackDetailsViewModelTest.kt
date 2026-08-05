@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import fr.leboncoin.domain.error.TrackError
 import fr.leboncoin.domain.model.Track
-import fr.leboncoin.domain.repository.TrackRepository
+import fr.leboncoin.domain.usecase.GetTrackByIdUseCase
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -24,12 +24,12 @@ import org.junit.Test
 class TrackDetailsViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
-    private lateinit var repository: TrackRepository
+    private lateinit var getTrackByIdUseCase: GetTrackByIdUseCase
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        repository = mockk<TrackRepository>()
+        getTrackByIdUseCase = mockk<GetTrackByIdUseCase>()
     }
 
     @After
@@ -38,8 +38,8 @@ class TrackDetailsViewModelTest {
     }
 
     @Test
-    fun `uiState starts as Loading before the repository emits`() = runTest {
-        every { repository.getTrackById(any()) } returns MutableStateFlow(Result.failure(TrackError.NotFoundError()))
+    fun `uiState starts as Loading before the use case emits`() = runTest {
+        every { getTrackByIdUseCase(any()) } returns MutableStateFlow(Result.failure(TrackError.NotFoundError()))
 
         val viewModel = viewModel()
 
@@ -49,9 +49,9 @@ class TrackDetailsViewModelTest {
     }
 
     @Test
-    fun `uiState becomes Success once the repository emits the matching track`() = runTest {
+    fun `uiState becomes Success once the use case emits the matching track`() = runTest {
         val track = Track(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu")
-        every { repository.getTrackById(any()) } returns MutableStateFlow(Result.success(track))
+        every { getTrackByIdUseCase(any()) } returns MutableStateFlow(Result.success(track))
 
         val viewModel = viewModel()
 
@@ -62,8 +62,8 @@ class TrackDetailsViewModelTest {
     }
 
     @Test
-    fun `uiState becomes Error when the repository emits a failure`() = runTest {
-        every { repository.getTrackById(any()) } returns MutableStateFlow(Result.failure(TrackError.UnknownError()))
+    fun `uiState becomes Error when the use case emits a failure`() = runTest {
+        every { getTrackByIdUseCase(any()) } returns MutableStateFlow(Result.failure(TrackError.UnknownError()))
 
         val viewModel = viewModel()
 
@@ -75,6 +75,6 @@ class TrackDetailsViewModelTest {
 
     private fun viewModel() = TrackDetailsViewModel(
         savedStateHandle = SavedStateHandle(mapOf(TrackDetailsViewModel.TRACK_ID_KEY to 1)),
-        repository = repository,
+        getTrackByIdUseCase = getTrackByIdUseCase,
     )
 }

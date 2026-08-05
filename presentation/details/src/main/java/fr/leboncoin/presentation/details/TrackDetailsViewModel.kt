@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import fr.leboncoin.domain.error.TrackError
-import fr.leboncoin.domain.repository.TrackRepository
+import fr.leboncoin.domain.usecase.GetTrackByIdUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -15,13 +15,12 @@ import javax.inject.Inject
 @HiltViewModel
 class TrackDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    repository: TrackRepository,
+    getTrackByIdUseCase: GetTrackByIdUseCase,
 ) : ViewModel() {
 
     private val albumId: Int = checkNotNull(savedStateHandle.get<Int>(TRACK_ID_KEY)) { "Missing $TRACK_ID_KEY" }
 
-    val uiState: StateFlow<TrackDetailsUiState> = repository
-        .getTrackById(albumId)
+    val uiState: StateFlow<TrackDetailsUiState> = getTrackByIdUseCase(albumId)
         .map { result ->
             result.fold(
                 onSuccess = { track -> TrackDetailsUiState.Success(track) },

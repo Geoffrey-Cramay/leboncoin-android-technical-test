@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import fr.leboncoin.domain.error.TrackError
-import fr.leboncoin.domain.repository.TrackRepository
+import fr.leboncoin.domain.usecase.GetTracksUseCase
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
 class TracksViewModel @Inject constructor(
-    repository: TrackRepository,
+    getTracksUseCase: GetTracksUseCase,
 ) : ViewModel() {
 
-    val uiState: StateFlow<TracksUiState> = repository.getAllTracks()
+    val uiState: StateFlow<TracksUiState> = getTracksUseCase()
         .map { result ->
             result.fold(
                 onSuccess = { tracks ->

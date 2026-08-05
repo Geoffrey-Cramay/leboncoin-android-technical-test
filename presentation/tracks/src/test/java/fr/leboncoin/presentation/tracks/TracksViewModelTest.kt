@@ -3,7 +3,7 @@ package fr.leboncoin.presentation.tracks
 import app.cash.turbine.test
 import fr.leboncoin.domain.error.TrackError
 import fr.leboncoin.domain.model.Track
-import fr.leboncoin.domain.repository.TrackRepository
+import fr.leboncoin.domain.usecase.GetTracksUseCase
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -23,12 +23,12 @@ import org.junit.Test
 class TracksViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
-    private lateinit var repository: TrackRepository
+    private lateinit var getTracksUseCase: GetTracksUseCase
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        repository = mockk<TrackRepository>()
+        getTracksUseCase = mockk<GetTracksUseCase>()
     }
 
     @After
@@ -37,10 +37,10 @@ class TracksViewModelTest {
     }
 
     @Test
-    fun `uiState starts as Loading before the repository emits`() = runTest {
-        every { repository.getAllTracks() } returns MutableStateFlow(Result.success(emptyList<Track>()))
+    fun `uiState starts as Loading before the use case emits`() = runTest {
+        every { getTracksUseCase() } returns MutableStateFlow(Result.success(emptyList<Track>()))
 
-        val viewModel = TracksViewModel(repository)
+        val viewModel = TracksViewModel(getTracksUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())
@@ -48,11 +48,11 @@ class TracksViewModelTest {
     }
 
     @Test
-    fun `uiState becomes Success once the repository emits data`() = runTest {
+    fun `uiState becomes Success once the use case emits data`() = runTest {
         val expected = listOf(Track(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
-        every { repository.getAllTracks() } returns MutableStateFlow(Result.success(expected))
+        every { getTracksUseCase() } returns MutableStateFlow(Result.success(expected))
 
-        val viewModel = TracksViewModel(repository)
+        val viewModel = TracksViewModel(getTracksUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())
@@ -61,11 +61,11 @@ class TracksViewModelTest {
     }
 
     @Test
-    fun `uiState is updated when the repository's flow emits again`() = runTest {
+    fun `uiState is updated when the use case's flow emits again`() = runTest {
         val source = MutableStateFlow(Result.success(emptyList<Track>()))
-        every { repository.getAllTracks() } returns source
+        every { getTracksUseCase() } returns source
 
-        val viewModel = TracksViewModel(repository)
+        val viewModel = TracksViewModel(getTracksUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())
@@ -78,11 +78,11 @@ class TracksViewModelTest {
     }
 
     @Test
-    fun `uiState becomes Error when the repository emits a failure`() = runTest {
+    fun `uiState becomes Error when the use case emits a failure`() = runTest {
         val source = MutableStateFlow<Result<List<Track>>>(Result.failure(TrackError.NetworkError()))
-        every { repository.getAllTracks() } returns source
+        every { getTracksUseCase() } returns source
 
-        val viewModel = TracksViewModel(repository)
+        val viewModel = TracksViewModel(getTracksUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())

@@ -2,10 +2,10 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "52df03dc70485d66b4bb8c85f0ad7f33",
+    "identityHash": "610a84f91c5d5afa87ee9dc64ad52366",
     "entities": [
       {
-        "tableName": "albums",
+        "tableName": "tracks",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `albumId` INTEGER NOT NULL, `title` TEXT NOT NULL, `url` TEXT NOT NULL, `thumbnailUrl` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
@@ -49,7 +49,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '52df03dc70485d66b4bb8c85f0ad7f33')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '610a84f91c5d5afa87ee9dc64ad52366')"
     ]
   }
 }

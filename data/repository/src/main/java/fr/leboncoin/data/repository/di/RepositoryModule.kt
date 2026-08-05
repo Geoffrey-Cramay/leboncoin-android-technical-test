@@ -4,8 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import fr.leboncoin.data.repository.AlbumRepositoryImpl
-import fr.leboncoin.domain.repository.AlbumRepository
+import fr.leboncoin.data.repository.TrackRepositoryImpl
+import fr.leboncoin.domain.repository.TrackRepository
 import javax.inject.Singleton
 
 @Module
@@ -14,5 +14,5 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
+    abstract fun bindTrackRepository(impl: TrackRepositoryImpl): TrackRepository
 }

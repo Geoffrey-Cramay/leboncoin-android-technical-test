@@ -1,0 +1,5 @@
+<resources>
+    <string name="tracks_error_network">Check your internet connection.</string>
+    <string name="tracks_error_storage">Unable to access local storage.</string>
+    <string name="tracks_error_unknown">Something went wrong.</string>
+</resources>

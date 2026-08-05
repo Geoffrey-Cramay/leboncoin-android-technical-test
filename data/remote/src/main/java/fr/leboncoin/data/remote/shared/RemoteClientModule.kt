@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import fr.leboncoin.data.remote.BuildConfig
-import fr.leboncoin.data.remote.album.api.AlbumApiService
+import fr.leboncoin.data.remote.track.api.TrackApiService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -44,7 +44,7 @@ internal object RemoteClientModule {
     fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
-            .baseUrl(AlbumApiService.BASE_URL)
+            .baseUrl(TrackApiService.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
@@ -52,5 +52,5 @@ internal object RemoteClientModule {
 
     @Provides
     @Singleton
-    fun provideAlbumApiService(retrofit: Retrofit): AlbumApiService = retrofit.create()
+    fun provideTrackApiService(retrofit: Retrofit): TrackApiService = retrofit.create()
 }

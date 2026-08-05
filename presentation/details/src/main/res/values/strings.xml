@@ -1,5 +1,5 @@
 <resources>
-    <string name="details_album_not_found">Album not found.</string>
+    <string name="details_track_not_found">Track not found.</string>
     <string name="details_error_network">Check your internet connection.</string>
     <string name="details_error_storage">Unable to access local storage.</string>
     <string name="details_error_unknown">Something went wrong.</string>

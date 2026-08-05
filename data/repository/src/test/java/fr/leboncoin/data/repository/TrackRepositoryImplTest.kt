@@ -59,6 +59,7 @@ class TrackRepositoryImplTest {
         val localTracks = MutableStateFlow(emptyList<TrackEntity>())
         every { trackLocalService.getTracks() } returns localTracks
         coEvery { trackRemoteService.getTracks() } returns remoteTracks
+        coEvery { trackLocalService.getFavoriteTrackIds() } returns emptyList()
         coEvery { trackLocalService.saveTracks(any()) } answers { localTracks.value = firstArg() }
 
         val emissions = mutableListOf<Result<List<Track>>>()
@@ -67,6 +68,26 @@ class TrackRepositoryImplTest {
         job.cancel()
 
         assertEquals(listOf(emptyList(), listOf("fresh")), emissions.map { result -> result.getOrThrow().map { it.title } })
+    }
+
+    @Test
+    fun `refresh preserves existing favorite ids when repopulating the cache`() = runTest(testDispatcher) {
+        val remoteTracks = listOf(
+            TrackDto(id = 1, albumId = 1, title = "favorited", url = "u", thumbnailUrl = "tu"),
+            TrackDto(id = 2, albumId = 1, title = "not favorited", url = "u", thumbnailUrl = "tu"),
+        )
+        every { trackLocalService.getTracks() } returns MutableStateFlow(emptyList())
+        coEvery { trackRemoteService.getTracks() } returns remoteTracks
+        coEvery { trackLocalService.getFavoriteTrackIds() } returns listOf(1)
+        var savedEntities = emptyList<TrackEntity>()
+        coEvery { trackLocalService.saveTracks(any()) } answers { savedEntities = firstArg() }
+
+        val job = launch { repository.getAllTracks().collect { } }
+        advanceUntilIdle()
+        job.cancel()
+
+        assertEquals(true, savedEntities.single { it.id == 1 }.isFavorite)
+        assertEquals(false, savedEntities.single { it.id == 2 }.isFavorite)
     }
 
     @Test
@@ -116,5 +137,24 @@ class TrackRepositoryImplTest {
         val result = repository.getTrackById(1).first()
 
         assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `toggleFavorite returns success when the local service returns success`() = runTest(testDispatcher) {
+        coEvery { trackLocalService.toggleFavorite(1) } returns Unit
+
+        val result = repository.toggleFavorite(1)
+
+        assertTrue(result.isSuccess)
+        coVerify { trackLocalService.toggleFavorite(1) }
+    }
+
+    @Test
+    fun `toggleFavorite returns a StorageError when the local service throws`() = runTest(testDispatcher) {
+        coEvery { trackLocalService.toggleFavorite(1) } throws RuntimeException("db unavailable")
+
+        val result = repository.toggleFavorite(1)
+
+        assertTrue(result.exceptionOrNull() is TrackError.StorageError)
     }
 }

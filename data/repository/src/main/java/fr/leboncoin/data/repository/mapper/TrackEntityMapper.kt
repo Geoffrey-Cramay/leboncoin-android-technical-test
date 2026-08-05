@@ -9,4 +9,5 @@ internal fun TrackEntity.toDomain() = Track(
     title = title,
     url = url,
     thumbnailUrl = thumbnailUrl,
+    isFavorite = isFavorite,
 )

@@ -10,4 +10,5 @@ data class TrackEntity(
     val title: String,
     val url: String,
     val thumbnailUrl: String,
+    val isFavorite: Boolean = false,
 )

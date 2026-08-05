@@ -48,6 +48,16 @@ class TrackRepositoryImpl @Inject constructor(
         }
         .flowOn(ioDispatcher)
 
+    override suspend fun toggleFavorite(id: Int): Result<Unit> = try {
+        trackLocalService.toggleFavorite(id)
+        Result.success(value = Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to toggle favorite for track $id", e)
+        Result.failure(exception = TrackError.StorageError())
+    }
+
     private suspend fun refresh(): Result<Unit> {
         val remoteTracks = try {
             trackRemoteService.getTracks()
@@ -59,7 +69,9 @@ class TrackRepositoryImpl @Inject constructor(
         }
 
         return try {
-            trackLocalService.saveTracks(tracks = remoteTracks.map { dto -> dto.toEntity() })
+            val favoriteIds = trackLocalService.getFavoriteTrackIds().toSet()
+            val entities = remoteTracks.map { dto -> dto.toEntity(isFavorite = dto.id in favoriteIds) }
+            trackLocalService.saveTracks(tracks = entities)
             Result.success(value = Unit)
         } catch (e: CancellationException) {
             throw e

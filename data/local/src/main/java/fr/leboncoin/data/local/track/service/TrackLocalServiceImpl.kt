@@ -14,4 +14,8 @@ internal class TrackLocalServiceImpl @Inject constructor(
     override fun getTrackById(id: Int): Flow<TrackEntity?> = trackDao.getTrackById(id)
 
     override suspend fun saveTracks(tracks: List<TrackEntity>) = trackDao.insertTracks(tracks)
+
+    override suspend fun toggleFavorite(id: Int) = trackDao.toggleFavorite(id)
+
+    override suspend fun getFavoriteTrackIds(): List<Int> = trackDao.getFavoriteTrackIds()
 }

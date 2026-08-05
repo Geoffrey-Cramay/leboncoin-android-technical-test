@@ -3,8 +3,8 @@ package fr.leboncoin.data.local.track.dao
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import fr.leboncoin.data.local.track.entity.TrackEntity
 import fr.leboncoin.data.local.shared.AppDatabase
+import fr.leboncoin.data.local.track.entity.TrackEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -75,5 +75,30 @@ class TrackDaoTest {
 
         job.cancel()
         assertEquals(listOf(firstTracks, secondTracks), emissions)
+    }
+
+    @Test
+    fun toggleFavorite_flipsIsFavorite() = runTest {
+        trackDao.insertTracks(listOf(TrackEntity(id = 1, albumId = 1, title = "t1", url = "u1", thumbnailUrl = "tu1")))
+
+        trackDao.toggleFavorite(1)
+        assertEquals(true, trackDao.getTrackById(1).first()?.isFavorite)
+
+        trackDao.toggleFavorite(1)
+        assertEquals(false, trackDao.getTrackById(1).first()?.isFavorite)
+    }
+
+    @Test
+    fun getFavoriteTrackIds_returnsOnlyFavoritedIds() = runTest {
+        trackDao.insertTracks(
+            listOf(
+                TrackEntity(id = 1, albumId = 1, title = "t1", url = "u1", thumbnailUrl = "tu1"),
+                TrackEntity(id = 2, albumId = 1, title = "t2", url = "u2", thumbnailUrl = "tu2"),
+            ),
+        )
+
+        trackDao.toggleFavorite(1)
+
+        assertEquals(listOf(1), trackDao.getFavoriteTrackIds())
     }
 }

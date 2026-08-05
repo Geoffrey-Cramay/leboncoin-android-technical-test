@@ -10,4 +10,8 @@ interface TrackLocalService {
     fun getTrackById(id: Int): Flow<TrackEntity?>
 
     suspend fun saveTracks(tracks: List<TrackEntity>)
+
+    suspend fun toggleFavorite(id: Int)
+
+    suspend fun getFavoriteTrackIds(): List<Int>
 }

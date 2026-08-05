@@ -18,4 +18,10 @@ internal interface TrackDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTracks(tracks: List<TrackEntity>)
+
+    @Query("UPDATE tracks SET isFavorite = NOT isFavorite WHERE id = :id")
+    suspend fun toggleFavorite(id: Int)
+
+    @Query("SELECT id FROM tracks WHERE isFavorite = 1")
+    suspend fun getFavoriteTrackIds(): List<Int>
 }

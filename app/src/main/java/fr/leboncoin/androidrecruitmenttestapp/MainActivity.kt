@@ -36,7 +36,11 @@ class MainActivity : ComponentActivity() {
                     viewModel = viewModel,
                     onItemSelected = {
                         analyticsHelper.trackSelection(it.id.toString())
-                        startActivity(Intent(this, DetailsActivity::class.java))
+                        startActivity(
+                            Intent(this, DetailsActivity::class.java).apply {
+                                putExtra(DetailsActivity.EXTRA_ALBUM_ID, it.id)
+                            }
+                        )
                     }
                 )
             }

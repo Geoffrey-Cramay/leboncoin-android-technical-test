@@ -3,4 +3,5 @@
     <string name="details_error_network">Check your internet connection.</string>
     <string name="details_error_storage">Unable to access local storage.</string>
     <string name="details_error_unknown">Something went wrong.</string>
+    <string name="details_favorite_content_description">Toggle favorite</string>
 </resources>

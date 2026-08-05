@@ -5,12 +5,16 @@ import app.cash.turbine.test
 import fr.leboncoin.domain.error.TrackError
 import fr.leboncoin.domain.model.Track
 import fr.leboncoin.domain.usecase.GetTrackByIdUseCase
+import fr.leboncoin.domain.usecase.ToggleFavoriteUseCase
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -25,11 +29,13 @@ class TrackDetailsViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private lateinit var getTrackByIdUseCase: GetTrackByIdUseCase
+    private lateinit var toggleFavoriteUseCase: ToggleFavoriteUseCase
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         getTrackByIdUseCase = mockk<GetTrackByIdUseCase>()
+        toggleFavoriteUseCase = mockk<ToggleFavoriteUseCase>()
     }
 
     @After
@@ -73,8 +79,48 @@ class TrackDetailsViewModelTest {
         }
     }
 
+    @Test
+    fun `onFavoriteClicked calls the toggle favorite use case with the track id`() = runTest {
+        every { getTrackByIdUseCase(any()) } returns MutableStateFlow(Result.failure(TrackError.NotFoundError()))
+        coEvery { toggleFavoriteUseCase(1) } returns Result.success(Unit)
+
+        val viewModel = viewModel()
+        viewModel.onFavoriteClicked()
+        advanceUntilIdle()
+
+        coVerify { toggleFavoriteUseCase(1) }
+    }
+
+    @Test
+    fun `onFavoriteClicked emits an error message when the use case fails`() = runTest {
+        every { getTrackByIdUseCase(any()) } returns MutableStateFlow(Result.failure(TrackError.NotFoundError()))
+        coEvery { toggleFavoriteUseCase(1) } returns Result.failure(TrackError.StorageError())
+
+        val viewModel = viewModel()
+
+        viewModel.favoriteToggleErrors.test {
+            viewModel.onFavoriteClicked()
+            assertEquals(R.string.details_error_storage, awaitItem())
+        }
+    }
+
+    @Test
+    fun `onFavoriteClicked does not emit an error when the use case succeeds`() = runTest {
+        every { getTrackByIdUseCase(any()) } returns MutableStateFlow(Result.failure(TrackError.NotFoundError()))
+        coEvery { toggleFavoriteUseCase(1) } returns Result.success(Unit)
+
+        val viewModel = viewModel()
+
+        viewModel.favoriteToggleErrors.test {
+            viewModel.onFavoriteClicked()
+            advanceUntilIdle()
+            expectNoEvents()
+        }
+    }
+
     private fun viewModel() = TrackDetailsViewModel(
         savedStateHandle = SavedStateHandle(mapOf(TrackDetailsViewModel.TRACK_ID_KEY to 1)),
         getTrackByIdUseCase = getTrackByIdUseCase,
+        toggleFavoriteUseCase = toggleFavoriteUseCase,
     )
 }

@@ -1,13 +1,13 @@
-package fr.leboncoin.data.network.api
+package fr.leboncoin.data.remote.api
 
-import fr.leboncoin.data.network.model.AlbumDto
+import fr.leboncoin.data.remote.model.AlbumDto
 import retrofit2.http.GET
 
 interface AlbumApiService {
-    
+
     @GET("img/shared/technical-test.json")
     suspend fun getAlbums(): List<AlbumDto>
-    
+
     companion object {
         const val BASE_URL = "https://static.leboncoin.fr/"
     }

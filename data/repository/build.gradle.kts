@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "fr.leboncoin.data"
+    namespace = "fr.leboncoin.data.repository"
     compileSdk = 36
 
     defaultConfig {
@@ -29,22 +28,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    buildFeatures {
-        buildConfig = true
-    }
-
-    dependencies {
-        implementation(libs.retrofit.core)
-        implementation(libs.retrofit.kotlin.serialization)
-        implementation(libs.okhttp.logging)
-
-        implementation(libs.kotlin.serialization.json)
-
-        testImplementation(libs.junit)
-    }
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+dependencies {
+    implementation(project(":domain"))
+    implementation(project(":data:remote"))
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

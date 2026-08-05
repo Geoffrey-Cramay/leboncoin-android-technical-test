@@ -1,8 +1,7 @@
 package fr.leboncoin.androidrecruitmenttestapp
 
-import fr.leboncoin.data.network.api.AlbumApiService
-import fr.leboncoin.data.network.model.AlbumDto
-import fr.leboncoin.data.repository.AlbumRepository
+import fr.leboncoin.domain.model.Album
+import fr.leboncoin.domain.repository.AlbumRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -30,13 +29,13 @@ class AlbumsViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(service: AlbumApiService) =
-        AlbumsViewModel(AlbumRepository(service))
+    private fun viewModel(result: suspend () -> Result<List<Album>>) =
+        AlbumsViewModel(fakeRepository(result))
 
     @Test
     fun `loadAlbums emits the repository result`() = runTest {
-        val expected = listOf(AlbumDto(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
-        val vm = viewModel(fakeService { expected })
+        val expected = listOf(Album(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
+        val vm = viewModel { Result.success(expected) }
 
         vm.loadAlbums()
         dispatcher.scheduler.advanceUntilIdle()
@@ -46,7 +45,7 @@ class AlbumsViewModelTest {
 
     @Test
     fun `loadAlbums failure leaves albums unchanged`() = runTest {
-        val vm = viewModel(fakeService { throw RuntimeException("network error") })
+        val vm = viewModel { Result.failure(RuntimeException("network error")) }
 
         vm.loadAlbums()
         dispatcher.scheduler.advanceUntilIdle()
@@ -54,7 +53,7 @@ class AlbumsViewModelTest {
         assertTrue(vm.albums.value.isEmpty())
     }
 
-    private fun fakeService(getAlbums: suspend () -> List<AlbumDto>) = object : AlbumApiService {
-        override suspend fun getAlbums(): List<AlbumDto> = getAlbums()
+    private fun fakeRepository(result: suspend () -> Result<List<Album>>) = object : AlbumRepository {
+        override suspend fun getAllAlbums(): Result<List<Album>> = result()
     }
 }

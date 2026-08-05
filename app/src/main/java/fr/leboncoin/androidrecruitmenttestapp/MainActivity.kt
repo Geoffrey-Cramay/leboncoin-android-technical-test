@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: AlbumsViewModel by lazy {
         val dependencies = (application as AppDependenciesProvider).dependencies
-        val factory = AlbumsViewModel.Factory(dependencies.dataDependencies.albumsRepository)
+        val factory = AlbumsViewModel.Factory(dependencies.albumRepository)
         ViewModelProvider(this, factory)[AlbumsViewModel::class.java]
     }
 

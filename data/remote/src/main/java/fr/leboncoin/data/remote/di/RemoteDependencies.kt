@@ -1,9 +1,8 @@
-package fr.leboncoin.data.di
+package fr.leboncoin.data.remote.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import fr.leboncoin.data.BuildConfig
-import fr.leboncoin.data.network.api.AlbumApiService
-import fr.leboncoin.data.repository.AlbumRepository
+import fr.leboncoin.data.remote.BuildConfig
+import fr.leboncoin.data.remote.api.AlbumApiService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -11,11 +10,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.create
 
-class DataDependencies {
+class RemoteDependencies {
 
-    val albumsRepository: AlbumRepository by lazy { AlbumRepository(apiService) }
-
-    private val apiService: AlbumApiService by lazy { retrofit.create<AlbumApiService>() }
+    val albumApiService: AlbumApiService by lazy { retrofit.create<AlbumApiService>() }
 
     private val retrofit: Retrofit by lazy {
         val contentType = "application/json".toMediaType()

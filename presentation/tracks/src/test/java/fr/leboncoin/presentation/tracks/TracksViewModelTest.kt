@@ -108,4 +108,33 @@ class TracksViewModelTest {
 
         coVerify { toggleFavoriteUseCase(1) }
     }
+
+    @Test
+    fun `onFavoriteClicked emits an error message when the use case fails`() = runTest {
+        every { getTracksUseCase() } returns MutableStateFlow(Result.success(emptyList<Track>()))
+        coEvery { toggleFavoriteUseCase(1) } returns Result.failure(TrackError.StorageError())
+        val track = Track(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu")
+
+        val viewModel = TracksViewModel(getTracksUseCase, toggleFavoriteUseCase)
+
+        viewModel.favoriteToggleErrors.test {
+            viewModel.onFavoriteClicked(track)
+            assertEquals(R.string.tracks_error_storage, awaitItem())
+        }
+    }
+
+    @Test
+    fun `onFavoriteClicked does not emit an error when the use case succeeds`() = runTest {
+        every { getTracksUseCase() } returns MutableStateFlow(Result.success(emptyList<Track>()))
+        coEvery { toggleFavoriteUseCase(1) } returns Result.success(Unit)
+        val track = Track(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu")
+
+        val viewModel = TracksViewModel(getTracksUseCase, toggleFavoriteUseCase)
+
+        viewModel.favoriteToggleErrors.test {
+            viewModel.onFavoriteClicked(track)
+            advanceUntilIdle()
+            expectNoEvents()
+        }
+    }
 }

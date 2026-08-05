@@ -40,8 +40,12 @@ class AlbumRepositoryImpl @Inject constructor(
             }
     }.flowOn(ioDispatcher)
 
-    override fun getAlbumById(id: Int): Flow<Album?> = albumLocalService.getAlbumById(id)
-        .map { entity -> entity?.toDomain() }
+    override fun getAlbumById(id: Int): Flow<Result<Album>> = albumLocalService.getAlbumById(id)
+        .map { entity -> entity?.toDomain()?.let { album -> Result.success(value = album) } ?: Result.failure(exception = AlbumError.NotFoundError()) }
+        .catch { error ->
+            Log.e(TAG, "Failed to read cached album", error)
+            emit(Result.failure(exception = AlbumError.StorageError()))
+        }
         .flowOn(ioDispatcher)
 
     private suspend fun refresh(): Result<Unit> {

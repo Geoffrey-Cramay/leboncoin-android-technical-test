@@ -6,5 +6,7 @@ sealed class AlbumError : Exception() {
 
     class StorageError : AlbumError()
 
+    class NotFoundError : AlbumError()
+
     class UnknownError : AlbumError()
 }

@@ -7,5 +7,5 @@ interface AlbumRepository {
 
     fun getAllAlbums(): Flow<Result<List<Album>>>
 
-    fun getAlbumById(id: Int): Flow<Album?>
+    fun getAlbumById(id: Int): Flow<Result<Album>>
 }

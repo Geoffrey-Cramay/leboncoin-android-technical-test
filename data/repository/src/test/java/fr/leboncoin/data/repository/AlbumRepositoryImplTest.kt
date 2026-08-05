@@ -4,6 +4,7 @@ import fr.leboncoin.data.local.album.entity.AlbumEntity
 import fr.leboncoin.data.local.album.service.AlbumLocalService
 import fr.leboncoin.data.remote.album.dto.AlbumDto
 import fr.leboncoin.data.remote.album.service.AlbumRemoteService
+import fr.leboncoin.domain.error.AlbumError
 import fr.leboncoin.domain.model.Album
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -85,6 +86,34 @@ class AlbumRepositoryImplTest {
         every { albumLocalService.getAlbums() } returns flow { throw RuntimeException("db unavailable") }
 
         val result = repository.getAllAlbums().first()
+
+        assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `getAlbumById emits the matching cached album`() = runTest(testDispatcher) {
+        val cached = AlbumEntity(id = 1, albumId = 1, title = "cached", url = "u", thumbnailUrl = "tu")
+        every { albumLocalService.getAlbumById(1) } returns MutableStateFlow(cached)
+
+        val album = repository.getAlbumById(1).first().getOrThrow()
+
+        assertEquals("cached", album.title)
+    }
+
+    @Test
+    fun `getAlbumById emits a NotFoundError when no album matches the id`() = runTest(testDispatcher) {
+        every { albumLocalService.getAlbumById(1) } returns MutableStateFlow(null)
+
+        val result = repository.getAlbumById(1).first()
+
+        assertTrue(result.exceptionOrNull() is AlbumError.NotFoundError)
+    }
+
+    @Test
+    fun `getAlbumById emits a Result failure when an exception is thrown`() = runTest(testDispatcher) {
+        every { albumLocalService.getAlbumById(1) } returns flow { throw RuntimeException("db unavailable") }
+
+        val result = repository.getAlbumById(1).first()
 
         assertTrue(result.isFailure)
     }

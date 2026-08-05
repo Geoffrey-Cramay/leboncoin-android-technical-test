@@ -51,6 +51,7 @@ dependencies {
     implementation(project(":data:repository"))
     implementation(project(":designsystem"))
     implementation(project(":presentation:albums"))
+    implementation(project(":presentation:details"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

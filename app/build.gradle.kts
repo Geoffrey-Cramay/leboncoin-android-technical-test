@@ -49,6 +49,7 @@ dependencies {
     implementation(project(":data:remote"))
     implementation(project(":data:local"))
     implementation(project(":data:repository"))
+    implementation(project(":designsystem"))
     implementation(project(":presentation:albums"))
 
     implementation(libs.androidx.core.ktx)
@@ -60,6 +61,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(platform(libs.spark.bom))
     implementation(libs.spark)
+    implementation(libs.coil.network.okhttp)
+    implementation(libs.okhttp.core)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     testImplementation(libs.junit)

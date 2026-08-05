@@ -2,11 +2,10 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "fr.leboncoin.presentation.albums"
+    namespace = "fr.leboncoin.designsystem"
     compileSdk = 36
 
     defaultConfig {
@@ -32,9 +31,6 @@ android {
     buildFeatures {
         compose = true
     }
-    testOptions {
-        unitTests.isReturnDefaultValues = true
-    }
 }
 
 kotlin {
@@ -42,22 +38,10 @@ kotlin {
 }
 
 dependencies {
-    api(project(":domain"))
-    implementation(project(":designsystem"))
-
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
+    api(platform(libs.androidx.compose.bom))
+    api(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(platform(libs.spark.bom))
-    implementation(libs.spark)
-
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
+    api(platform(libs.spark.bom))
+    api(libs.spark)
+    implementation(libs.coil.compose)
 }

@@ -6,11 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import com.adevinta.spark.SparkTheme
 import dagger.hilt.android.AndroidEntryPoint
 import fr.leboncoin.androidrecruitmenttestapp.utils.AnalyticsHelper
 import fr.leboncoin.presentation.albums.AlbumsScreen
 import fr.leboncoin.presentation.albums.AlbumsViewModel
+import fr.leboncoin.designsystem.AppTheme
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            SparkTheme {
+            AppTheme {
                 AlbumsScreen(
                     viewModel = viewModel,
                     onItemSelected = {

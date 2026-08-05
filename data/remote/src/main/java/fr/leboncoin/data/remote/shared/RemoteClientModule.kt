@@ -1,4 +1,4 @@
-package fr.leboncoin.data.remote.di
+package fr.leboncoin.data.remote.shared
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import fr.leboncoin.data.remote.BuildConfig
-import fr.leboncoin.data.remote.api.AlbumApiService
+import fr.leboncoin.data.remote.album.api.AlbumApiService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -17,7 +17,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RemoteModule {
+internal object RemoteClientModule {
 
     @Provides
     @Singleton

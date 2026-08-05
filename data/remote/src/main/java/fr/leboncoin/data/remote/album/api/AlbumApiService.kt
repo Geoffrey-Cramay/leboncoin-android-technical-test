@@ -1,9 +1,9 @@
-package fr.leboncoin.data.remote.api
+package fr.leboncoin.data.remote.album.api
 
-import fr.leboncoin.data.remote.model.AlbumDto
+import fr.leboncoin.data.remote.album.dto.AlbumDto
 import retrofit2.http.GET
 
-interface AlbumApiService {
+internal interface AlbumApiService {
 
     @GET("img/shared/technical-test.json")
     suspend fun getAlbums(): List<AlbumDto>

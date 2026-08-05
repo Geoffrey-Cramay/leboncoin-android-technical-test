@@ -1,4 +1,4 @@
-package fr.leboncoin.data.remote.model
+package fr.leboncoin.data.remote.album.dto
 
 import kotlinx.serialization.Serializable
 

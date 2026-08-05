@@ -4,12 +4,16 @@ import app.cash.turbine.test
 import fr.leboncoin.domain.error.TrackError
 import fr.leboncoin.domain.model.Track
 import fr.leboncoin.domain.usecase.GetTracksUseCase
+import fr.leboncoin.domain.usecase.ToggleFavoriteUseCase
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -24,11 +28,13 @@ class TracksViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private lateinit var getTracksUseCase: GetTracksUseCase
+    private lateinit var toggleFavoriteUseCase: ToggleFavoriteUseCase
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         getTracksUseCase = mockk<GetTracksUseCase>()
+        toggleFavoriteUseCase = mockk<ToggleFavoriteUseCase>()
     }
 
     @After
@@ -40,7 +46,7 @@ class TracksViewModelTest {
     fun `uiState starts as Loading before the use case emits`() = runTest {
         every { getTracksUseCase() } returns MutableStateFlow(Result.success(emptyList<Track>()))
 
-        val viewModel = TracksViewModel(getTracksUseCase)
+        val viewModel = TracksViewModel(getTracksUseCase, toggleFavoriteUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())
@@ -52,7 +58,7 @@ class TracksViewModelTest {
         val expected = listOf(Track(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
         every { getTracksUseCase() } returns MutableStateFlow(Result.success(expected))
 
-        val viewModel = TracksViewModel(getTracksUseCase)
+        val viewModel = TracksViewModel(getTracksUseCase, toggleFavoriteUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())
@@ -65,7 +71,7 @@ class TracksViewModelTest {
         val source = MutableStateFlow(Result.success(emptyList<Track>()))
         every { getTracksUseCase() } returns source
 
-        val viewModel = TracksViewModel(getTracksUseCase)
+        val viewModel = TracksViewModel(getTracksUseCase, toggleFavoriteUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())
@@ -82,11 +88,24 @@ class TracksViewModelTest {
         val source = MutableStateFlow<Result<List<Track>>>(Result.failure(TrackError.NetworkError()))
         every { getTracksUseCase() } returns source
 
-        val viewModel = TracksViewModel(getTracksUseCase)
+        val viewModel = TracksViewModel(getTracksUseCase, toggleFavoriteUseCase)
 
         viewModel.uiState.test {
             assertEquals(TracksUiState.Loading, awaitItem())
             assertTrue(awaitItem() is TracksUiState.Error)
         }
+    }
+
+    @Test
+    fun `onFavoriteClicked calls the toggle favorite use case with the track's id`() = runTest {
+        every { getTracksUseCase() } returns MutableStateFlow(Result.success(emptyList<Track>()))
+        coEvery { toggleFavoriteUseCase(1) } returns Result.success(Unit)
+        val track = Track(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu")
+
+        val viewModel = TracksViewModel(getTracksUseCase, toggleFavoriteUseCase)
+        viewModel.onFavoriteClicked(track)
+        advanceUntilIdle()
+
+        coVerify { toggleFavoriteUseCase(1) }
     }
 }

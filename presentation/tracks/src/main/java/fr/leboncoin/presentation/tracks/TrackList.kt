@@ -13,6 +13,7 @@ import fr.leboncoin.domain.model.Track
 fun TrackList(
     tracks: List<Track>,
     onItemSelected: (Track) -> Unit,
+    onFavoriteClicked: (Track) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
@@ -28,6 +29,7 @@ fun TrackList(
             TrackItem(
                 track = track,
                 onItemSelected = onItemSelected,
+                onFavoriteClicked = onFavoriteClicked,
             )
         }
     }

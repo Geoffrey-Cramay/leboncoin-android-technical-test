@@ -11,11 +11,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.adevinta.spark.ExperimentalSparkApi
 import com.adevinta.spark.SparkTheme
 import com.adevinta.spark.components.card.Card
+import com.adevinta.spark.components.iconbuttons.toggle.IconToggleButtonGhost
+import com.adevinta.spark.components.iconbuttons.toggle.IconToggleButtonIcons
+import com.adevinta.spark.icons.SparkIcons
+import com.adevinta.spark.icons.LikeFill
+import com.adevinta.spark.icons.LikeOutline
 import fr.leboncoin.domain.model.Track
 import fr.leboncoin.designsystem.LabeledChipRow
 import fr.leboncoin.designsystem.RemoteImage
@@ -24,7 +30,8 @@ import fr.leboncoin.designsystem.RemoteImage
 @Composable
 fun TrackItem(
     track: Track,
-    onItemSelected : (Track) -> Unit,
+    onItemSelected: (Track) -> Unit,
+    onFavoriteClicked: (Track) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -45,7 +52,7 @@ fun TrackItem(
 
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .weight(1f)
                     .padding(14.dp),
             ) {
                 Text(
@@ -62,6 +69,16 @@ fun TrackItem(
                     trackId = track.id,
                 )
             }
+
+            IconToggleButtonGhost(
+                checked = track.isFavorite,
+                onCheckedChange = { onFavoriteClicked(track) },
+                icons = IconToggleButtonIcons(
+                    checked = SparkIcons.LikeFill,
+                    unchecked = SparkIcons.LikeOutline,
+                ),
+                contentDescription = stringResource(R.string.tracks_favorite_content_description),
+            )
         }
     }
 }

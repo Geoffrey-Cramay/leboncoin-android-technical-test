@@ -36,6 +36,7 @@ fun TracksScreen(
                 TrackList(
                     tracks = state.tracks,
                     onItemSelected = onItemSelected,
+                    onFavoriteClicked = viewModel::onFavoriteClicked,
                     contentPadding = contentPadding,
                 )
             }

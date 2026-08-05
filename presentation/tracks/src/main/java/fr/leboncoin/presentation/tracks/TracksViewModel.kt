@@ -4,16 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import fr.leboncoin.domain.error.TrackError
+import fr.leboncoin.domain.model.Track
 import fr.leboncoin.domain.usecase.GetTracksUseCase
+import fr.leboncoin.domain.usecase.ToggleFavoriteUseCase
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class TracksViewModel @Inject constructor(
     getTracksUseCase: GetTracksUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
 ) : ViewModel() {
 
     val uiState: StateFlow<TracksUiState> = getTracksUseCase()
@@ -26,6 +30,10 @@ class TracksViewModel @Inject constructor(
             )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), TracksUiState.Loading)
+
+    fun onFavoriteClicked(track: Track) {
+        viewModelScope.launch { toggleFavoriteUseCase(track.id) }
+    }
 
     private companion object {
         const val STOP_TIMEOUT_MILLIS = 5_000L

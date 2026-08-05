@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
@@ -45,7 +46,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":domain"))
     implementation(project(":data:remote"))
     implementation(project(":data:repository"))
     implementation(project(":presentation:albums"))
@@ -59,6 +59,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(platform(libs.spark.bom))
     implementation(libs.spark)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

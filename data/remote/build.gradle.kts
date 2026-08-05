@@ -46,5 +46,8 @@ dependencies {
 
     implementation(libs.kotlin.serialization.json)
 
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
     testImplementation(libs.junit)
 }

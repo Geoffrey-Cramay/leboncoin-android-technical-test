@@ -1,18 +1,22 @@
 package fr.leboncoin.presentation.albums
 
+import app.cash.turbine.test
+import fr.leboncoin.domain.error.AlbumError
 import fr.leboncoin.domain.model.Album
 import fr.leboncoin.domain.repository.AlbumRepository
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -32,37 +36,54 @@ class AlbumsViewModelTest {
     }
 
     @Test
-    fun `albums returns the repository's data once observed`() = runTest {
-        val expected = listOf(Album(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
-        val vm = AlbumsViewModel(fakeRepository(MutableStateFlow(expected)))
+    fun `uiState starts as Loading before the repository emits`() = runTest {
+        val vm = AlbumsViewModel(fakeRepository(MutableStateFlow(Result.success(emptyList<Album>()))))
 
-        val job = launch { vm.albums.collect { } }
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(expected, vm.albums.value)
-        job.cancel()
+        vm.uiState.test {
+            assertEquals(AlbumsUiState.Loading, awaitItem())
+        }
     }
 
     @Test
-    fun `albums is updated when the repository's flow emits again`() = runTest {
-        val source = MutableStateFlow(emptyList<Album>())
-        val vm = AlbumsViewModel(fakeRepository(source))
+    fun `uiState becomes Success once the repository emits data`() = runTest {
+        val expected = listOf(Album(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
+        val vm = AlbumsViewModel(fakeRepository(MutableStateFlow(Result.success(expected))))
 
-        val job = launch { vm.albums.collect { } }
-        dispatcher.scheduler.advanceUntilIdle()
-        assertEquals(emptyList<Album>(), vm.albums.value)
-
-        val refreshed = listOf(Album(id = 1, albumId = 1, title = "fresh", url = "u", thumbnailUrl = "tu"))
-        source.value = refreshed
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(refreshed, vm.albums.value)
-        job.cancel()
+        vm.uiState.test {
+            assertEquals(AlbumsUiState.Loading, awaitItem())
+            assertEquals(AlbumsUiState.Success(expected), awaitItem())
+        }
     }
 
-    private fun fakeRepository(albums: Flow<List<Album>>) = object : AlbumRepository {
-        override fun getAllAlbums(): Flow<List<Album>> = albums
+    @Test
+    fun `uiState is updated when the repository's flow emits again`() = runTest {
+        val source = MutableStateFlow(Result.success(emptyList<Album>()))
+        val vm = AlbumsViewModel(fakeRepository(source))
 
-        override fun getAlbumById(id: Int): Flow<Album?> = error("not used by AlbumsViewModel")
+        vm.uiState.test {
+            assertEquals(AlbumsUiState.Loading, awaitItem())
+
+            val refreshed = listOf(Album(id = 1, albumId = 1, title = "fresh", url = "u", thumbnailUrl = "tu"))
+            source.value = Result.success(refreshed)
+
+            assertEquals(AlbumsUiState.Success(refreshed), awaitItem())
+        }
+    }
+
+    @Test
+    fun `uiState becomes Error when the repository emits a failure`() = runTest {
+        val source = MutableStateFlow<Result<List<Album>>>(Result.failure(AlbumError.NetworkError()))
+        val vm = AlbumsViewModel(fakeRepository(source))
+
+        vm.uiState.test {
+            assertEquals(AlbumsUiState.Loading, awaitItem())
+            assertTrue(awaitItem() is AlbumsUiState.Error)
+        }
+    }
+
+    private fun fakeRepository(albums: Flow<Result<List<Album>>>): AlbumRepository {
+        val repository = mockk<AlbumRepository>()
+        every { repository.getAllAlbums() } returns albums
+        return repository
     }
 }

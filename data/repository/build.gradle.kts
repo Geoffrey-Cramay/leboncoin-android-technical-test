@@ -50,4 +50,5 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.okhttp.core)
+    testImplementation(libs.mockk)
 }

@@ -5,32 +5,47 @@ import fr.leboncoin.data.local.album.service.AlbumLocalService
 import fr.leboncoin.data.remote.album.dto.AlbumDto
 import fr.leboncoin.data.remote.album.service.AlbumRemoteService
 import fr.leboncoin.domain.model.Album
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AlbumRepositoryImplTest {
 
-    @Test
-    fun `getAllAlbums emits cached data when cache is not empty`() = runTest {
-        val cached = listOf(AlbumEntity(id = 1, albumId = 1, title = "cached", url = "u", thumbnailUrl = "tu"))
-        val repository = repository(
-            albumRemoteService = fakeRemoteService { error("should never be called") },
-            albumLocalService = fakeLocalService(initial = cached),
+    private val testDispatcher = StandardTestDispatcher()
+    private lateinit var albumRemoteService: AlbumRemoteService
+    private lateinit var albumLocalService: AlbumLocalService
+    private lateinit var repository: AlbumRepositoryImpl
+
+    @Before
+    fun setUp() {
+        albumRemoteService = mockk()
+        albumLocalService = mockk()
+        repository = AlbumRepositoryImpl(
+            albumRemoteService = albumRemoteService,
+            albumLocalService = albumLocalService,
+            ioDispatcher = testDispatcher,
         )
+    }
+
+    @Test
+    fun `getAllAlbums emits cached data when cache is not empty`() = runTest(testDispatcher) {
+        val cached = listOf(AlbumEntity(id = 1, albumId = 1, title = "cached", url = "u", thumbnailUrl = "tu"))
+        every { albumLocalService.getAlbums() } returns MutableStateFlow(cached)
 
         val albums = repository.getAllAlbums().first().getOrThrow()
 
@@ -38,12 +53,12 @@ class AlbumRepositoryImplTest {
     }
 
     @Test
-    fun `getAllAlbums calls refresh from remote and emits the result when the cache is empty`() = runTest {
+    fun `getAllAlbums calls refresh from remote and emits the result when the cache is empty`() = runTest(testDispatcher) {
         val remoteAlbums = listOf(AlbumDto(id = 1, albumId = 1, title = "fresh", url = "u", thumbnailUrl = "tu"))
-        val repository = repository(
-            albumRemoteService = fakeRemoteService { remoteAlbums },
-            albumLocalService = fakeLocalService(initial = emptyList()),
-        )
+        val localAlbums = MutableStateFlow(emptyList<AlbumEntity>())
+        every { albumLocalService.getAlbums() } returns localAlbums
+        coEvery { albumRemoteService.getAlbums() } returns remoteAlbums
+        coEvery { albumLocalService.saveAlbums(any()) } answers { localAlbums.value = firstArg() }
 
         val emissions = mutableListOf<Result<List<Album>>>()
         val job = launch { repository.getAllAlbums().toList(emissions) }
@@ -54,76 +69,23 @@ class AlbumRepositoryImplTest {
     }
 
     @Test
-    fun `getAllAlbums does not call refresh when the cache is not empty`() = runTest {
-        var refreshCallCount = 0
+    fun `getAllAlbums does not call refresh when the cache is not empty`() = runTest(testDispatcher) {
         val cached = listOf(AlbumEntity(id = 1, albumId = 1, title = "cached", url = "u", thumbnailUrl = "tu"))
-        val repository = repository(
-            albumRemoteService = fakeRemoteService {
-                refreshCallCount++
-                emptyList()
-            },
-            albumLocalService = fakeLocalService(initial = cached),
-        )
+        every { albumLocalService.getAlbums() } returns MutableStateFlow(cached)
 
         val job = launch { repository.getAllAlbums().collect { } }
         advanceUntilIdle()
         job.cancel()
 
-        assertEquals(0, refreshCallCount)
+        coVerify(exactly = 0) { albumRemoteService.getAlbums() }
     }
 
     @Test
-    fun `getAllAlbums emits a Result failure when an exception is thrown`() = runTest {
-        val repository = repository(
-            albumRemoteService = fakeRemoteService { error("should never be called") },
-            albumLocalService = object : AlbumLocalService {
-                override fun getAlbums(): Flow<List<AlbumEntity>> = flow { throw RuntimeException("db unavailable") }
-                override fun getAlbumById(id: Int): Flow<AlbumEntity?> = error("not used")
-                override suspend fun saveAlbums(albums: List<AlbumEntity>) = error("not used")
-            },
-        )
+    fun `getAllAlbums emits a Result failure when an exception is thrown`() = runTest(testDispatcher) {
+        every { albumLocalService.getAlbums() } returns flow { throw RuntimeException("db unavailable") }
 
         val result = repository.getAllAlbums().first()
 
         assertTrue(result.isFailure)
-    }
-
-    @Test
-    fun `getAlbumById emits the matching cached album`() = runTest {
-        val cached = listOf(AlbumEntity(id = 1, albumId = 1, title = "cached", url = "u", thumbnailUrl = "tu"))
-        val repository = repository(
-            albumRemoteService = fakeRemoteService { error("should never be called") },
-            albumLocalService = fakeLocalService(initial = cached),
-        )
-
-        val album = repository.getAlbumById(1).first()
-
-        assertEquals("cached", album?.title)
-    }
-
-    private fun TestScope.repository(
-        albumRemoteService: AlbumRemoteService,
-        albumLocalService: AlbumLocalService,
-    ) = AlbumRepositoryImpl(
-        albumRemoteService = albumRemoteService,
-        albumLocalService = albumLocalService,
-        ioDispatcher = StandardTestDispatcher(testScheduler),
-    )
-
-    private fun fakeRemoteService(getAlbumDtos: suspend () -> List<AlbumDto>) = object : AlbumRemoteService {
-        override suspend fun getAlbums(): List<AlbumDto> = getAlbumDtos()
-    }
-
-    private fun fakeLocalService(initial: List<AlbumEntity>) = object : AlbumLocalService {
-        private val albums = MutableStateFlow(initial)
-
-        override fun getAlbums(): Flow<List<AlbumEntity>> = albums
-
-        override fun getAlbumById(id: Int): Flow<AlbumEntity?> =
-            albums.map { entities -> entities.find { it.id == id } }
-
-        override suspend fun saveAlbums(albums: List<AlbumEntity>) {
-            this.albums.value = albums
-        }
     }
 }

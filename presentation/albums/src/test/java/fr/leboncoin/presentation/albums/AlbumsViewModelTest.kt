@@ -8,7 +8,6 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -24,10 +23,12 @@ import org.junit.Test
 class AlbumsViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
+    private lateinit var repository: AlbumRepository
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
+        repository = mockk<AlbumRepository>()
     }
 
     @After
@@ -37,9 +38,11 @@ class AlbumsViewModelTest {
 
     @Test
     fun `uiState starts as Loading before the repository emits`() = runTest {
-        val vm = AlbumsViewModel(fakeRepository(MutableStateFlow(Result.success(emptyList<Album>()))))
+        every { repository.getAllAlbums() } returns MutableStateFlow(Result.success(emptyList<Album>()))
 
-        vm.uiState.test {
+        val viewModel = AlbumsViewModel(repository)
+
+        viewModel.uiState.test {
             assertEquals(AlbumsUiState.Loading, awaitItem())
         }
     }
@@ -47,9 +50,11 @@ class AlbumsViewModelTest {
     @Test
     fun `uiState becomes Success once the repository emits data`() = runTest {
         val expected = listOf(Album(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
-        val vm = AlbumsViewModel(fakeRepository(MutableStateFlow(Result.success(expected))))
+        every { repository.getAllAlbums() } returns MutableStateFlow(Result.success(expected))
 
-        vm.uiState.test {
+        val viewModel = AlbumsViewModel(repository)
+
+        viewModel.uiState.test {
             assertEquals(AlbumsUiState.Loading, awaitItem())
             assertEquals(AlbumsUiState.Success(expected), awaitItem())
         }
@@ -58,9 +63,11 @@ class AlbumsViewModelTest {
     @Test
     fun `uiState is updated when the repository's flow emits again`() = runTest {
         val source = MutableStateFlow(Result.success(emptyList<Album>()))
-        val vm = AlbumsViewModel(fakeRepository(source))
+        every { repository.getAllAlbums() } returns source
 
-        vm.uiState.test {
+        val viewModel = AlbumsViewModel(repository)
+
+        viewModel.uiState.test {
             assertEquals(AlbumsUiState.Loading, awaitItem())
 
             val refreshed = listOf(Album(id = 1, albumId = 1, title = "fresh", url = "u", thumbnailUrl = "tu"))
@@ -73,17 +80,13 @@ class AlbumsViewModelTest {
     @Test
     fun `uiState becomes Error when the repository emits a failure`() = runTest {
         val source = MutableStateFlow<Result<List<Album>>>(Result.failure(AlbumError.NetworkError()))
-        val vm = AlbumsViewModel(fakeRepository(source))
+        every { repository.getAllAlbums() } returns source
 
-        vm.uiState.test {
+        val viewModel = AlbumsViewModel(repository)
+
+        viewModel.uiState.test {
             assertEquals(AlbumsUiState.Loading, awaitItem())
             assertTrue(awaitItem() is AlbumsUiState.Error)
         }
-    }
-
-    private fun fakeRepository(albums: Flow<Result<List<Album>>>): AlbumRepository {
-        val repository = mockk<AlbumRepository>()
-        every { repository.getAllAlbums() } returns albums
-        return repository
     }
 }

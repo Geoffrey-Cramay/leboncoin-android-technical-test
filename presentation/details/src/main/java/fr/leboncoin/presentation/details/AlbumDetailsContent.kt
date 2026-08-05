@@ -39,7 +39,8 @@ fun AlbumDetailsContent(
         )
 
         LabeledChipRow(
-            labels = listOf("Album #${album.albumId}", "Track #${album.id}"),
+            albumId = album.albumId,
+            trackId = album.id,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
     }

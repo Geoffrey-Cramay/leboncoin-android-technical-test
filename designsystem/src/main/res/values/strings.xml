@@ -1,0 +1,4 @@
+<resources>
+    <string name="label_album_number">Album #%d</string>
+    <string name="label_track_number">Track #%d</string>
+</resources>

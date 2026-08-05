@@ -58,7 +58,8 @@ fun AlbumItem(
                 Spacer(Modifier.weight(1f))
 
                 LabeledChipRow(
-                    labels = listOf("Album #${album.albumId}", "Track #${album.id}"),
+                    albumId = album.albumId,
+                    trackId = album.id,
                 )
             }
         }

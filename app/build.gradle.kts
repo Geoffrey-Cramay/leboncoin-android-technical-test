@@ -47,6 +47,7 @@ kotlin {
 
 dependencies {
     implementation(project(":data:remote"))
+    implementation(project(":data:local"))
     implementation(project(":data:repository"))
     implementation(project(":presentation:albums"))
 

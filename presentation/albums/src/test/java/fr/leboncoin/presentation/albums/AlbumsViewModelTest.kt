@@ -4,13 +4,15 @@ import fr.leboncoin.domain.model.Album
 import fr.leboncoin.domain.repository.AlbumRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -29,31 +31,36 @@ class AlbumsViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(result: suspend () -> Result<List<Album>>) =
-        AlbumsViewModel(fakeRepository(result))
-
     @Test
-    fun `loadAlbums emits the repository result`() = runTest {
+    fun `albums returns the repository's data once observed`() = runTest {
         val expected = listOf(Album(id = 1, albumId = 1, title = "t", url = "u", thumbnailUrl = "tu"))
-        val vm = viewModel { Result.success(expected) }
+        val vm = AlbumsViewModel(fakeRepository(MutableStateFlow(expected)))
 
-        vm.loadAlbums()
+        val job = launch { vm.albums.collect { } }
         dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(expected, vm.albums.value)
+        job.cancel()
     }
 
     @Test
-    fun `loadAlbums failure leaves albums unchanged`() = runTest {
-        val vm = viewModel { Result.failure(RuntimeException("network error")) }
+    fun `albums is updated when the repository's flow emits again`() = runTest {
+        val source = MutableStateFlow(emptyList<Album>())
+        val vm = AlbumsViewModel(fakeRepository(source))
 
-        vm.loadAlbums()
+        val job = launch { vm.albums.collect { } }
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(emptyList<Album>(), vm.albums.value)
+
+        val refreshed = listOf(Album(id = 1, albumId = 1, title = "fresh", url = "u", thumbnailUrl = "tu"))
+        source.value = refreshed
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertTrue(vm.albums.value.isEmpty())
+        assertEquals(refreshed, vm.albums.value)
+        job.cancel()
     }
 
-    private fun fakeRepository(result: suspend () -> Result<List<Album>>) = object : AlbumRepository {
-        override suspend fun getAllAlbums(): Result<List<Album>> = result()
+    private fun fakeRepository(albums: Flow<List<Album>>) = object : AlbumRepository {
+        override fun getAllAlbums(): Flow<List<Album>> = albums
     }
 }

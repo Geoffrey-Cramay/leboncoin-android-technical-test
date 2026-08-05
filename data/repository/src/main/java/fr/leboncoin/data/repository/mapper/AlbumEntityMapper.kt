@@ -1,9 +1,9 @@
 package fr.leboncoin.data.repository.mapper
 
 import fr.leboncoin.data.local.album.entity.AlbumEntity
-import fr.leboncoin.data.remote.album.dto.AlbumDto
+import fr.leboncoin.domain.model.Album
 
-internal fun AlbumDto.toEntity() = AlbumEntity(
+internal fun AlbumEntity.toDomain() = Album(
     id = id,
     albumId = albumId,
     title = title,

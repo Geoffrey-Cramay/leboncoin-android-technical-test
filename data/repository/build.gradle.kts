@@ -28,6 +28,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 kotlin {
@@ -37,6 +40,7 @@ kotlin {
 dependencies {
     implementation(project(":domain"))
     implementation(project(":data:remote"))
+    implementation(project(":data:local"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

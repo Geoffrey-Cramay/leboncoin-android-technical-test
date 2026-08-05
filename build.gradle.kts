@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.hilt.android) apply false
+    alias(libs.plugins.room) apply false
 }
 
 // Hilt 2.58's javac annotation processor bundles a kotlin-metadata-jvm that only

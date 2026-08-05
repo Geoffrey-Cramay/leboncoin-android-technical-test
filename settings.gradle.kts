@@ -27,5 +27,6 @@ rootProject.name = "Android RecruitmentTest App"
 include(":app")
 include(":domain")
 include(":data:remote")
+include(":data:local")
 include(":data:repository")
 include(":presentation:albums")

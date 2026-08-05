@@ -1,28 +1,29 @@
 package fr.leboncoin.androidrecruitmenttestapp
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import fr.leboncoin.data.network.model.AlbumDto
 import fr.leboncoin.data.repository.AlbumRepository
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-@OptIn(DelicateCoroutinesApi::class)
 class AlbumsViewModel(
     private val repository: AlbumRepository,
 ) : ViewModel() {
 
-    private val _albums = MutableSharedFlow<List<AlbumDto>>()
-    val albums: SharedFlow<List<AlbumDto>> = _albums
+    private val _albums = MutableStateFlow<List<AlbumDto>>(emptyList())
+    val albums: StateFlow<List<AlbumDto>> = _albums
 
     fun loadAlbums() {
-        GlobalScope.launch {
+        viewModelScope.launch {
             try {
-                _albums.emit(repository.getAllAlbums())
-            } catch (_: Exception) { /* TODO: Handle errors */ }
+                _albums.value = repository.getAllAlbums()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load albums", e)
+            }
         }
     }
 
@@ -33,5 +34,9 @@ class AlbumsViewModel(
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return AlbumsViewModel(repository) as T
         }
+    }
+
+    private companion object {
+        const val TAG = "AlbumsViewModel"
     }
 }

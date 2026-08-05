@@ -11,5 +11,7 @@ internal class AlbumLocalServiceImpl @Inject constructor(
 
     override fun getAlbums(): Flow<List<AlbumEntity>> = albumDao.getAlbums()
 
+    override fun getAlbumById(id: Int): Flow<AlbumEntity?> = albumDao.getAlbumById(id)
+
     override suspend fun saveAlbums(albums: List<AlbumEntity>) = albumDao.insertAlbums(albums)
 }

@@ -9,6 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -71,6 +72,9 @@ class AlbumRepositoryImplTest {
         private val albums = MutableStateFlow(initial)
 
         override fun getAlbums(): Flow<List<AlbumEntity>> = albums
+
+        override fun getAlbumById(id: Int): Flow<AlbumEntity?> =
+            albums.map { entities -> entities.find { it.id == id } }
 
         override suspend fun saveAlbums(albums: List<AlbumEntity>) {
             this.albums.value = albums

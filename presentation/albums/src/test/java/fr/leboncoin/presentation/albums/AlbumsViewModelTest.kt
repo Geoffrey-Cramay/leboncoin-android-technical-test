@@ -62,5 +62,7 @@ class AlbumsViewModelTest {
 
     private fun fakeRepository(albums: Flow<List<Album>>) = object : AlbumRepository {
         override fun getAllAlbums(): Flow<List<Album>> = albums
+
+        override fun getAlbumById(id: Int): Flow<Album?> = error("not used by AlbumsViewModel")
     }
 }

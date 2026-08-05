@@ -11,6 +11,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class AlbumRepositoryImpl @Inject constructor(
@@ -26,6 +27,9 @@ class AlbumRepositoryImpl @Inject constructor(
             send(entities.map { entity -> entity.toDomain() })
         }
     }
+
+    override fun getAlbumById(id: Int): Flow<Album?> = albumLocalService.getAlbumById(id)
+        .map { entity -> entity?.toDomain() }
 
     private suspend fun refresh() {
         try {

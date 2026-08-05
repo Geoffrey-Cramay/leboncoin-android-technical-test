@@ -7,5 +7,7 @@ interface AlbumLocalService {
 
     fun getAlbums(): Flow<List<AlbumEntity>>
 
+    fun getAlbumById(id: Int): Flow<AlbumEntity?>
+
     suspend fun saveAlbums(albums: List<AlbumEntity>)
 }

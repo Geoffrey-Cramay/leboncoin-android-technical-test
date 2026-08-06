@@ -57,16 +57,18 @@ tasks.withType<Test> {
 
 dependencies {
     api(project(":domain"))
-    implementation(project(":designsystem"))
+    implementation(project(":design-system"))
 
-    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+
     implementation(platform(libs.spark.bom))
     implementation(libs.spark)
 
@@ -75,6 +77,6 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.turbine)
     testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
 }

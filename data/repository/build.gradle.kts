@@ -38,9 +38,9 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":domain"))
-    implementation(project(":data:remote"))
     implementation(project(":data:local"))
+    implementation(project(":data:remote"))
+    implementation(project(":domain"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -49,6 +49,6 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.okhttp.core)
     testImplementation(libs.mockk)
+    testImplementation(libs.okhttp.core)
 }

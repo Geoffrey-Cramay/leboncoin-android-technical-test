@@ -55,8 +55,10 @@ dependencies {
     api(platform(libs.androidx.compose.bom))
     api(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
+
     api(platform(libs.spark.bom))
     api(libs.spark)
+
     implementation(libs.coil.compose)
 
     testImplementation(libs.junit)

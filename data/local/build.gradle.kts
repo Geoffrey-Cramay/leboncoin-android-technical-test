@@ -40,8 +40,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 
     implementation(libs.hilt.android)

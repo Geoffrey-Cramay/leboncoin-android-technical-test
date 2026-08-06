@@ -3,10 +3,11 @@ package fr.leboncoin.presentation.details
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,14 +35,19 @@ fun TrackDetailsContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
-    Column(modifier = modifier.fillMaxSize().padding(contentPadding)) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+            .verticalScroll(rememberScrollState()),
+    ) {
         RemoteImage(
             url = track.url,
             contentDescription = track.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f),
+                .align(Alignment.CenterHorizontally)
+                .size(IMAGE_SIZE),
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -72,3 +78,5 @@ fun TrackDetailsContent(
         )
     }
 }
+
+private val IMAGE_SIZE = 200.dp

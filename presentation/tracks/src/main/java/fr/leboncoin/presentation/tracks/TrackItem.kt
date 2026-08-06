@@ -59,7 +59,7 @@ fun TrackItem(
                     text = track.title,
                     style = SparkTheme.typography.caption,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
 
                 Spacer(Modifier.weight(1f))

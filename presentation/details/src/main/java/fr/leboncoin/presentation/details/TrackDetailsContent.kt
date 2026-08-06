@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.adevinta.spark.ExperimentalSparkApi
 import com.adevinta.spark.SparkTheme
@@ -23,6 +24,7 @@ import com.adevinta.spark.components.iconbuttons.toggle.IconToggleButtonIcons
 import com.adevinta.spark.icons.LikeFill
 import com.adevinta.spark.icons.LikeOutline
 import com.adevinta.spark.icons.SparkIcons
+import fr.leboncoin.designsystem.AppTheme
 import fr.leboncoin.designsystem.LabeledChipRow
 import fr.leboncoin.designsystem.RemoteImage
 import fr.leboncoin.domain.model.Track
@@ -80,3 +82,34 @@ fun TrackDetailsContent(
 }
 
 private val IMAGE_SIZE = 200.dp
+
+private val previewTrack = Track(
+    id = 1,
+    albumId = 1,
+    title = "Bohemian Rhapsody",
+    url = "https://example.com/track.jpg",
+    thumbnailUrl = "https://example.com/thumbnail.jpg",
+    isFavorite = false,
+)
+
+@Preview(showBackground = true)
+@Composable
+private fun TrackDetailsContentPreview() {
+    AppTheme {
+        TrackDetailsContent(
+            track = previewTrack,
+            onFavoriteClicked = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TrackDetailsContentFavoritePreview() {
+    AppTheme {
+        TrackDetailsContent(
+            track = previewTrack.copy(isFavorite = true),
+            onFavoriteClicked = {},
+        )
+    }
+}

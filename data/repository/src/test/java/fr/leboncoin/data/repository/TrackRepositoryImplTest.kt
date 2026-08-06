@@ -73,8 +73,8 @@ class TrackRepositoryImplTest {
     @Test
     fun `refresh preserves existing favorite ids when repopulating the cache`() = runTest(testDispatcher) {
         val remoteTracks = listOf(
-            TrackDto(id = 1, albumId = 1, title = "favorited", url = "u", thumbnailUrl = "tu"),
-            TrackDto(id = 2, albumId = 1, title = "not favorited", url = "u", thumbnailUrl = "tu"),
+            TrackDto(id = 1, albumId = 1, title = "favorite", url = "u", thumbnailUrl = "tu"),
+            TrackDto(id = 2, albumId = 1, title = "not favorite", url = "u", thumbnailUrl = "tu"),
         )
         every { trackLocalService.getTracks() } returns MutableStateFlow(emptyList())
         coEvery { trackRemoteService.getTracks() } returns remoteTracks
